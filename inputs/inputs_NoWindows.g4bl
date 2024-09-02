@@ -1,0 +1,30 @@
+/global/fieldMgr/eventTimeLimit 10000 s
+
+# QGSP is the "default" physics use-case for HEP
+physics QGSP
+
+# * Not needed? *
+# the beam is 10 GeV kinetic energy, the mass of an e- is 0.511 MeV/c^2
+#param M=0.511 KE=10000.0
+#param P=sqrt(($M+$KE)*($M+$KE)-$M*$M)
+
+param P=10000.0 # GeV/c
+param d=10.0 # mm
+param n=10 # number of slices in x- and y-directions
+param zdiv=$n*2
+
+beam gaussian meanMomentum=$P nEvents=50 particle=e- beamZ=0.0 beamX=50 beamY=50 sigmaX=6.0 sigmaY=6.0 sigmaXp=0.000100 sigmaYp=0.000100 meanMomentum=$P
+
+detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ASCII
+
+do i 1 $n
+    do j 1 $n
+        do k 1 $zdiv
+            param x=$i*$n
+            param y=$j*$n
+            param z='$k*$n + 1000'
+            param color=$i/$n,$j/$n,$k/$n,.5
+            place Det x=$x y=$y z=$z color=$color rename=Det$i.$j.$k
+        enddo
+    enddo
+enddo
