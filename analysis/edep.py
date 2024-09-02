@@ -6,9 +6,9 @@ import pandas as pd
 import numpy as np
 
 # LXe divisions in x,y,z
-nx = 11
-ny = 11
-nz = 21
+nx = 10
+ny = 10
+nz = 13
 
 Edep = np.zeros((nx, ny, nz))
 
@@ -18,8 +18,8 @@ e_charge = 1.602176634e-19
 # LXe density in g/cm^3
 density = 2.953
 
-# Cube dimensions in mm
-cube_dim = [10, 10, 10]
+# Cube dimensions in cm
+cube_dim = [1.0, 1.0, 1.0]
 
 # Mass of a cube in g
 m_cube = density * cube_dim[0] * cube_dim[1] * cube_dim[2]
@@ -39,11 +39,11 @@ for i in range(0, nx):
                 delim_whitespace=True,
             )
 
-            # total Edep for the detector, converted from MeV to J
-            Edep_tot = df["Edep"].sum() * 1e6 * e_charge
+            # total Edep for the detector in MeV
+            Edep_tot = df["Edep"].sum()
 
             # Calculate energy deposition density [J/g]
-            pedd = Edep_tot / m_cube
+            pedd = Edep_tot * 1e6 * e_charge / m_cube
 
             df_temp = pd.DataFrame(
                 {
