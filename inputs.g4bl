@@ -1,0 +1,113 @@
+/global/fieldMgr/eventTimeLimit 10000 s
+
+# QGSP is the "default" physics use-case for HEP
+physics QGSP
+
+###########################################################
+# * Not needed? *
+# the beam is 10 GeV kinetic energy, the mass of an e- is 0.511 MeV/c^2
+#param M=0.511 KE=10000.0
+#param P=sqrt(($M+$KE)*($M+$KE)-$M*$M)
+###########################################################
+
+# LXe parameters
+param d=10.0 # mm
+param n=9 # n+1 = number of slices in x- and y-directions
+
+# Beam parameters
+param P=10000.0 # GeV/c
+param beamX=45 # mm
+param beamY=45 # mm
+
+# offset the LXe target in z
+param LXeFront=1000 # mm
+
+# 13 cm thick LXe --> ~4.5 Radiation lengths
+param zdiv=12
+
+# Window parameters
+param WinThickness=2 # mm
+param Rmax=10 # total radius of Be window [mm]
+param rDivs=12 # number of cuts in theta
+param n_rings=4 # number of annuli to partition the window (doesn't include the center circle)
+
+# We set r0 such that the final annulus has an outer radius equal to desired window radius
+param rScaleFactor=sqrt($rDivs+1)
+param r0=$Rmax/($rScaleFactor^$n_rings) # center circle radius [mm]
+
+param WinInZ='$LXeFront-$d/2-$WinThickness'
+param WinOutZ='$z+$d/2+$WinThickness'
+
+
+# Set e- beam parameters
+# 2*sigmaR = 6 mm = 2*sqrt(2)*sigmaX ==> sigmaX (and sigmaY) = 3/sqrt(2) mm ~ 2.12 mm
+beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100 meanMomentum=$P
+
+
+###########################################################
+#                       Detectors                         #
+###########################################################
+
+# For LXe target
+detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ASCII
+
+# For target windows
+param mat=Be # define the window material as separate parameter so it can be easily changed
+
+# Solely for collecting particle data at the end of the LXe target
+# Vacuum material does not interact with the particles
+virtualdetector vDet width=$d*10 height=$d*10 length=10^-6 material=Vacuum color=1,1,0 format=ASCII
+
+# This can be ignored. There in case you want to check that the beam radius is ~6 mm
+# virtualdetector vRadCheck radius=6 length=10^-6 material=Vacuum color=0,0,1 format=ASCII
+# place vRadCheck x=$beamX y=$beamY z='$LXeFront-5-2*$WinThickness' rename=WinIn
+
+###########################################################
+#                   Detector Placement                    #
+###########################################################
+
+# Place a 3D grid of cube detectors to fill out the LXe target
+do i 0 $n
+    do j 0 $n
+        do k 0 $zdiv
+            param x=$i*$d
+            param y=$j*$d
+            param z='$k*$d + $LXeFront'
+            param color=$i/$n,$j/$n,$k/$n,.5
+            place Det x=$x y=$y z=$z color=$color rename=Det$i.$j.$k
+        enddo
+    enddo
+enddo
+
+# Place sections of annuli to fill disk geometry of windows 
+# this ensures that the volume of each slice is equivalent (excluding the chunks in the outer ring)
+do i 0 $n_rings
+    # Start by defining & placing a small circular detector in the center
+    if $i==0
+        detector Win radius=$r0 length=$WinThickness material=$mat color=0,0,1,.85 format=ASCII
+        place Win x=$beamX y=$beamY z='$WinInZ' rename=WinIn$i
+    else
+        do j 1 $rDivs
+            param col=$i/$n_rings,$j/$rDivs,0,.85
+            # Define parameters for radii and initial & final angles
+            param innerRadius='$rScaleFactor^($i-1)*$r0' # mm
+            param outerRadius='$rScaleFactor^$i*$r0' # mm
+            param initialPhi='($j-1)*360/$rDivs' # degrees
+            param finalPhi='$j*360/$rDivs' # degrees
+
+            # Create detector
+            detector Win innerRadius=$innerRadius outerRadius=$outerRadius initialPhi=$initialPhi finalPhi=$finalPhi length=$WinThickness material=$mat color=$col format=ASCII
+
+            # Place entrance window
+            place Win x=$beamX y=$beamY z=$WinInZ rename=WinIn$i.$j
+
+            # Place exit window
+            place Win x=$beamX y=$beamY z=$WinOutZ rename=WinOut$i.$j
+
+            param angle_prev=$angle # degrees
+
+    enddo
+enddo
+
+# Place a virtual detector at the end of the target to detect number of e+'s exiting
+place vDet x=$beamX y=$beamY z=$z+5
