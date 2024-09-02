@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-df = pd.read_csv('peak_energy_deposition_density.txt', skiprows=4, delim_whitespace=True)
-xz = df[['z','x','peak_energy_deposition_density']][df['y'] == df['y'].max()/2].to_numpy()
-xy = df[['x','y','peak_energy_deposition_density']][df['z'] == df['z'].max()/2].to_numpy()
+df = pd.read_csv('pedd.txt', skiprows=5, delim_whitespace=True)
+xz = df[['z','x','pedd']][df['y'] == df['y'].max()/2].to_numpy()
+xy = df[['x','y','pedd']][df['z'] == df['z'].max()/2].to_numpy()
 
 
-pz = pd.read_csv('Det5_5_0.txt', skiprows=1, delim_whitespace=True)['Pz']
+pz = pd.read_csv('Det5.5.0.txt', skiprows=1, delim_whitespace=True)['Pz']
 print(max(pz))
 plt.hist(pz.to_numpy(), bins=100)
 plt.xlabel(r'$P_z \ [MeV/c]$')

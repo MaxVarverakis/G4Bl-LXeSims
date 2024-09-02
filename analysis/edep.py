@@ -1,32 +1,16 @@
+# Original code courtesey of https://github.com/sanjeev-one/Liquid_Xenon_Sim.git
+
+# * Run this file in the directory containing your data *
+
 import pandas as pd
 import numpy as np
 
-# Define the dimensions of your detector array
-num_x = 11
-num_y = 11
-num_z = 21
+# LXe divisions in x,y,z
+nx = 11
+ny = 11
+nz = 21
 
-# Initialize a 3D numpy array to hold the Edep sums
-Edep_sums = np.zeros((num_x, num_y, num_z))
-
-# Define column names
-column_names = [
-    "x",
-    "y",
-    "z",
-    "Px",
-    "Py",
-    "Pz",
-    "t",
-    "PDGid",
-    "EventID",
-    "TrackID",
-    "ParentID",
-    "Weight",
-    "Edep",
-    "VisibleEdep",
-    "Ntracks",
-]
+Edep = np.zeros((nx, ny, nz))
 
 # Electron charge in C
 e_charge = 1.602176634e-19
@@ -34,53 +18,60 @@ e_charge = 1.602176634e-19
 # LXe density in g/cm^3
 density = 2.953
 
-# Cube dimensions in cm
-cube_dim = [1, 1, 1]
+# Cube dimensions in mm
+cube_dim = [10, 10, 10]
 
 # Mass of a cube in g
 m_cube = density * cube_dim[0] * cube_dim[1] * cube_dim[2]
 
 # DataFrame to hold the final result
-df_result = pd.DataFrame(columns=["x", "y", "z", "peak_energy_deposition_density"])
+# edep = energy deposition
+# pedd = peak energy deposition density
+df_new = pd.DataFrame(columns=["x", "y", "z", "edep", "pedd"])
 
 # Loop over all detectors
-for x in range(num_x):
-    for y in range(num_y):
-        for z in range(num_z):
-            # Read the file, skipping the first two rows
+for i in range(0, nx):
+    for j in range(0, ny):
+        for k in range(0, nz):
             df = pd.read_csv(
-                f"./Det{x}_{y}_{z}.txt",
-                skiprows=2,
+                f"Det{i}.{j}.{k}.txt",
+                skiprows=1,
                 delim_whitespace=True,
-                names=column_names,
             )
 
-            sum_value = df["Edep"].sum()
+            # total Edep for the detector, converted from MeV to J
+            Edep_tot = df["Edep"].sum() * 1e6 * e_charge
 
-            # Convert MeV to J and then calculate energy deposition density
-            peak_edep_density = sum_value * 1e6 * e_charge / m_cube
+            # Calculate energy deposition density [J/g]
+            pedd = Edep_tot / m_cube
 
-            # Add the result to the DataFrame
-            df_result = df_result.append(
+            df_temp = pd.DataFrame(
                 {
-                    "x": x,
-                    "y": y,
-                    "z": z,
-                    "peak_energy_deposition_density": peak_edep_density,
+                    "x": i,
+                    "y": j,
+                    "z": k,
+                    "edep": Edep_tot,
+                    "pedd": pedd,
                 },
-                ignore_index=True,
-            )
+                index=[i*(ny*nz) + j*nz + k])
+            
+            # print(df_temp)
+
+            # Append the result to the DataFrame
+            df_new = pd.concat([df_new,df_temp])
+            # print(df_new)
 
 # Write the DataFrame to a text file
-with open("peak_energy_deposition_density.txt", "w") as f:
+with open("pedd.txt", "w") as f:
     f.write(
         "# This file contains the peak energy deposition density for each cube in the detector array.\n"
     )
     f.write(
-        "# Each line corresponds to one cube, with the following format: (x, y, z, peak energy deposition density)\n"
+        "# Each line corresponds to one cube, with the following format: (x, y, z, pedd)\n"
     )
     f.write("# x, y, z: The coordinates of the cube in the detector array\n")
+    f.write("# edep (energy deposition): The energy deposition in the cube, in units of J\n")
     f.write(
-        "# peak energy deposition density: The maximum energy deposition density in the cube, in units of J/g\n"
+        "# pedd (peak energy deposition density): The maximum energy deposition density in the cube, in units of J/g\n"
     )
-    df_result.to_csv(f, sep="\t", index=False)
+    df_new.to_csv(f, sep="\t", index=False)
