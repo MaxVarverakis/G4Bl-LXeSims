@@ -11,28 +11,31 @@ physics QGSP
 ###########################################################
 
 # LXe parameters
-param d=10.0 # mm
-param n=9 # n+1 = number of slices in x- and y-directions
+param w=100 #  total x- and y-dimension mm
+param d=5.0 # cube dimensions for each detector [mm]
+param n='$w/$d-1' # n+1 = number of slices in x- and y-directions
+
+# Aim for ~4.5 Radiation lengths
+param RL=28.720 # radiation length of LXe in mm
+param L_RL=4.5 # desired thickness of LXe in radiation lengths
+param zDiv='ceil($RL*$L_RL/$d-1)' # rounds up to integer value to partition LXe in z-direction
+
+# offset the LXe target in z
+param LXeFront=1000 # mm
 
 # Beam parameters
 param P=10000.0 # GeV/c
 param beamX=45 # mm
 param beamY=45 # mm
 
-# offset the LXe target in z
-param LXeFront=1000 # mm
-
-# 13 cm thick LXe --> ~4.5 Radiation lengths
-param zDiv=12
-
 # Window parameters
-param WinZSlices=2 # number of slices in z
-param WinThickness=2/$WinZSlices # mm
+param z_Divs=1 # number of slices in z
+param WinThickness=2/$z_Divs # mm
 param Rmax=10 # total radius of Be window [mm]
-param r_Divs=12 # number of cuts in theta
+param r_Divs=24 # number of cuts in theta
 param n_rings=7 # number of annuli to partition the window (doesn't include the center circle)
 
-# We set r0 such that the final annulus has an outer radius equal to desired window radius
+# Set r0 such that the final annulus has an outer radius equal to desired window radius
 param rScaleFactor=sqrt($n_rings*$r_Divs+1)
 param r0=$Rmax/$rScaleFactor # center circle radius [mm]
 
@@ -42,7 +45,7 @@ param WinOutZ='$LXeFront+$zDiv*$d+$d/2+$WinThickness/2'
 
 # Set e- beam parameters
 # 2*sigmaR = 6 mm = 2*sqrt(2)*sigmaX ==> sigmaX (and sigmaY) = 3/sqrt(2) mm ~ 2.12 mm
-beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100 meanMomentum=$P
+beam gaussian meanMomentum=$P nEvents=10000 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100 meanMomentum=$P
 
 
 ###########################################################
@@ -82,19 +85,19 @@ enddo
 
 # Place sections of annuli to fill disk geometry of windows 
 # this ensures that the volume of each slice is equivalent
-do nz 1 $WinZSlices
+do nz 1 $z_Divs
     do i 0 $n_rings
         # Start by defining & placing a small circular detector in the center
         if $i==0
             '
-            detector Win radius=$r0 length=$WinThickness material=$mat color=0,0,$nz/$WinZSlices,1 format=ASCII
+            detector Win radius=$r0 length=$WinThickness material=$mat color=0,0,$nz/$z_Divs,1 format=ASCII
             place Win x=$beamX y=$beamY z='$WinInZ-($nz-1)*$WinThickness' rename=WinIn$i.0.$nz
             place Win x=$beamX y=$beamY z='$WinOutZ+($nz-1)*$WinThickness' rename=WinOut$i.0.$nz
             '
         else
             '
             do j 1 $r_Divs
-                param col=$i/$n_rings,$j/$r_Divs,$nz/$WinZSlices,1
+                param col=$i/$n_rings,$j/$r_Divs,$nz/$z_Divs,1
 
                 # Define parameters for radii and initial & final angles
                 param innerRadius='sqrt(($i-1)*$r_Divs+1)*$r0' # mm

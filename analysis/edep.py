@@ -4,16 +4,20 @@
 
 import pandas as pd
 import numpy as np
+import json
+
+with open("../analysis/sim_info.json", "r") as f:
+    info = json.load(f)
 
 headers = ["x", "y", "z", "edep", "pedd"]
 
 # Set window material (str: must be a `rho_Window` key)
-WinMat = 'Be'
+WinMat = "Be"
 
 # LXe divisions in x,y,z
-nx = 10
-ny = 10
-nz = 13
+nx = info["LXeDivs"][0]
+ny = info["LXeDivs"][1]
+nz = info["LXeDivs"][2]
 
 Edep = np.zeros((nx, ny, nz))
 
@@ -21,26 +25,25 @@ Edep = np.zeros((nx, ny, nz))
 e_charge = 1.602176634e-19
 
 # Material densities in g/cm^3 (https://www.fe.infn.it/u/paterno/Geant4_tutorial/slides_further/Geometry/G4_Nist_Materials.pdf)
-rho_LXe = 2.953
-rho_Window = {'Be': 1.848, 'Al': 2.699}
 
 # Cube dimensions in cm
-cube_dim = [1.0, 1.0, 1.0]
+cube_dim = info["LXeCubeDim"]
 
 # Tub volume = volume of center circlular window detector
-r_window = 1.0 # cm
-n_rings = 7
-r_Divs = 12
-Win_thickness = 0.2 # total thickness (in z) of window [cm]
-z_Divs = 2 # number of z-slices in windows
+r_window = info["WinProperties"]["r_window"] # cm
+n_rings = info["WinProperties"]["n_rings"]
+r_Divs = info["WinProperties"]["r_Divs"]
+Win_thickness = info["WinProperties"]["Win_thickness"] # total thickness (in z) of window in cm
+z_Divs = info["WinProperties"]["z_Divs"] # number of z-slices in windows
+
 r0 = r_window/np.sqrt(n_rings*r_Divs+1)
 tub_vol = np.pi*r0**2*(Win_thickness/z_Divs) # cm^3
 
 # Mass of a LXe cube
-m_cube = rho_LXe * cube_dim[0] * cube_dim[1] * cube_dim[2] # g
+m_cube = info["rho"]["LXe"] * cube_dim[0] * cube_dim[1] * cube_dim[2] # g
 
 # Mass of window chunk (tub)
-m_tub = rho_Window[WinMat] * tub_vol # g
+m_tub = info["rho"][WinMat] * tub_vol # g
 
 ###########################################
 #    Function for extracting Edep/PEDD    #

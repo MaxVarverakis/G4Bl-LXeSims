@@ -1,0 +1,19 @@
+{
+    "n_events": 1e4,
+    "beamX": 45,
+    "beamY": 45,
+    "LXeDivs": [10, 10, 13],
+    "LXeCubeDim": [0.5, 0.5, 0.5],
+    "rho": {
+        "LXe": 2.953, 
+        "Be": 1.848, 
+        "Al": 2.699
+    },
+    "WinProperties": {
+        "r_window": 1.0,
+        "n_rings": 7,
+        "r_Divs": 24,
+        "Win_thickness": 0.2,
+        "z_Divs": 1
+    }
+}
