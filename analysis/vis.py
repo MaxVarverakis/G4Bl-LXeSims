@@ -16,7 +16,7 @@ print(f'######### Mean Edep/incident e- #########\n{df["edep"].sum()/n_events:.2
 
 ######## Exiting Positrons ########
 
-ep = pd.read_csv('vDet.txt', skiprows=3, names='x y z Px Py Pz t PDGid EventID TrackID ParentID Weight'.split(' '), delim_whitespace=True).drop(index=0)
+ep = pd.read_csv('zDet.txt', skiprows=3, names='x y z Px Py Pz t PDGid EventID TrackID ParentID Weight'.split(' '), delim_whitespace=True).drop(index=0)
 ep = ep[ep['PDGid'] == -11] # filter out positrons
 ke = np.sqrt(np.square(ep[['Px','Py','Pz']]).sum(axis=1))
 

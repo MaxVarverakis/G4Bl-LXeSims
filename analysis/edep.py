@@ -15,14 +15,19 @@ Edep = np.zeros((nx, ny, nz))
 # Electron charge in C
 e_charge = 1.602176634e-19
 
-# LXe density in g/cm^3
-density = 2.953
+# Material densities in g/cm^3 (https://www.fe.infn.it/u/paterno/Geant4_tutorial/slides_further/Geometry/G4_Nist_Materials.pdf)
+rho_LXe = 2.953
+rho_Be = 1.848
+rho_Al = 2.699
 
 # Cube dimensions in cm
 cube_dim = [1.0, 1.0, 1.0]
 
+# Tub dimensions in cm
+tub_dim = [] # [inner radius, outer radius, initial phi, final phi, thickness]
+
 # Mass of a cube in g
-m_cube = density * cube_dim[0] * cube_dim[1] * cube_dim[2]
+m_cube = rho_LXe * cube_dim[0] * cube_dim[1] * cube_dim[2]
 
 # DataFrame to hold the final result
 # edep = energy deposition

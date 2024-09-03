@@ -23,20 +23,20 @@ param beamY=45 # mm
 param LXeFront=1000 # mm
 
 # 13 cm thick LXe --> ~4.5 Radiation lengths
-param zdiv=12
+param zDiv=12
 
 # Window parameters
 param WinThickness=2 # mm
 param Rmax=10 # total radius of Be window [mm]
-param rDivs=12 # number of cuts in theta
-param n_rings=4 # number of annuli to partition the window (doesn't include the center circle)
+param rDivs=8 # number of cuts in theta
+param n_rings=2 # number of annuli to partition the window (doesn't include the center circle)
 
 # We set r0 such that the final annulus has an outer radius equal to desired window radius
 param rScaleFactor=sqrt($rDivs+1)
 param r0=$Rmax/($rScaleFactor^$n_rings) # center circle radius [mm]
 
-param WinInZ='$LXeFront-$d/2-$WinThickness'
-param WinOutZ='$z+$d/2+$WinThickness'
+param WinInZ='$LXeFront-$d/2-$WinThickness/2'
+param WinOutZ='$LXeFront+$zDiv*$d+$d/2+$WinThickness/2'
 
 
 # Set e- beam parameters
@@ -55,8 +55,8 @@ detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ASCII
 param mat=Be # define the window material as separate parameter so it can be easily changed
 
 # Solely for collecting particle data at the end of the LXe target
-# Vacuum material does not interact with the particles
-virtualdetector vDet width=$d*10 height=$d*10 length=10^-6 material=Vacuum color=1,1,0 format=ASCII
+# no `place` needed
+zntuple zDet z='$LXeFront+$zDiv*$d+$d/2' format=ASCII file=''
 
 # This can be ignored. There in case you want to check that the beam radius is ~6 mm
 # virtualdetector vRadCheck radius=6 length=10^-6 material=Vacuum color=0,0,1 format=ASCII
@@ -69,45 +69,49 @@ virtualdetector vDet width=$d*10 height=$d*10 length=10^-6 material=Vacuum color
 # Place a 3D grid of cube detectors to fill out the LXe target
 do i 0 $n
     do j 0 $n
-        do k 0 $zdiv
+        do k 0 $zDiv
             param x=$i*$d
             param y=$j*$d
             param z='$k*$d + $LXeFront'
-            param color=$i/$n,$j/$n,$k/$n,.5
+            param color=$i/$n,$j/$n,$k/$n,1
             place Det x=$x y=$y z=$z color=$color rename=Det$i.$j.$k
         enddo
     enddo
 enddo
 
 # Place sections of annuli to fill disk geometry of windows 
-# this ensures that the volume of each slice is equivalent (excluding the chunks in the outer ring)
+# this ensures that the volume of each slice is equivalent
 do i 0 $n_rings
     # Start by defining & placing a small circular detector in the center
     if $i==0
-        detector Win radius=$r0 length=$WinThickness material=$mat color=0,0,1,.85 format=ASCII
-        place Win x=$beamX y=$beamY z='$WinInZ' rename=WinIn$i
+        '
+        detector Win radius=$r0 length=$WinThickness material=$mat color=1,0,0,1 format=ASCII
+        place Win x=$beamX y=$beamY z='$WinInZ' rename=WinIn$i.0
+        place Win x=$beamX y=$beamY z='$WinOutZ' rename=WinOut$i.0
+        '
     else
+        '
         do j 1 $rDivs
-            param col=$i/$n_rings,$j/$rDivs,0,.85
+            param col=$i/$n_rings,$j/$rDivs,0,1
+
             # Define parameters for radii and initial & final angles
             param innerRadius='$rScaleFactor^($i-1)*$r0' # mm
             param outerRadius='$rScaleFactor^$i*$r0' # mm
             param initialPhi='($j-1)*360/$rDivs' # degrees
             param finalPhi='$j*360/$rDivs' # degrees
 
+            # Create a unique solid (to assign the detector to)
+            tubs Win_solid$i.$j innerRadius=$innerRadius outerRadius=$outerRadius initialPhi=$initialPhi finalPhi=$finalPhi length=$WinThickness
+
             # Create detector
-            detector Win innerRadius=$innerRadius outerRadius=$outerRadius initialPhi=$initialPhi finalPhi=$finalPhi length=$WinThickness material=$mat color=$col format=ASCII
+            detector Win solid=Win_solid$i.$j material=$mat color=$col format=ASCII
 
             # Place entrance window
             place Win x=$beamX y=$beamY z=$WinInZ rename=WinIn$i.$j
 
             # Place exit window
             place Win x=$beamX y=$beamY z=$WinOutZ rename=WinOut$i.$j
-
-            param angle_prev=$angle # degrees
-
-    enddo
+        enddo
+        '
+    endif
 enddo
-
-# Place a virtual detector at the end of the target to detect number of e+'s exiting
-place vDet x=$beamX y=$beamY z=$z+5
