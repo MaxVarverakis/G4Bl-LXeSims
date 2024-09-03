@@ -26,10 +26,11 @@ param LXeFront=1000 # mm
 param zDiv=12
 
 # Window parameters
-param WinThickness=2 # mm
+param WinZSlices=2 # number of slices in z
+param WinThickness=2/$WinZSlices # mm
 param Rmax=10 # total radius of Be window [mm]
-param rDivs=24 # number of cuts in theta
-param n_rings=5 # number of annuli to partition the window (doesn't include the center circle)
+param rDivs=12 # number of cuts in theta
+param n_rings=7 # number of annuli to partition the window (doesn't include the center circle)
 
 # We set r0 such that the final annulus has an outer radius equal to desired window radius
 param rScaleFactor=sqrt($n_rings*$rDivs+1)
@@ -81,37 +82,39 @@ enddo
 
 # Place sections of annuli to fill disk geometry of windows 
 # this ensures that the volume of each slice is equivalent
-do i 0 $n_rings
-    # Start by defining & placing a small circular detector in the center
-    if $i==0
-        '
-        detector Win radius=$r0 length=$WinThickness material=$mat color=1,0,0,1 format=ASCII
-        place Win x=$beamX y=$beamY z='$WinInZ' rename=WinIn$i.0
-        place Win x=$beamX y=$beamY z='$WinOutZ' rename=WinOut$i.0
-        '
-    else
-        '
-        do j 1 $rDivs
-            param col=$i/$n_rings,$j/$rDivs,0,1
+do nz 1 $WinZSlices
+    do i 0 $n_rings
+        # Start by defining & placing a small circular detector in the center
+        if $i==0
+            '
+            detector Win radius=$r0 length=$WinThickness material=$mat color=0,0,$nz/$WinZSlices,1 format=ASCII
+            place Win x=$beamX y=$beamY z='$WinInZ-($nz-1)*$WinThickness' rename=WinIn$i.0.$nz
+            place Win x=$beamX y=$beamY z='$WinOutZ+($nz-1)*$WinThickness' rename=WinOut$i.0.$nz
+            '
+        else
+            '
+            do j 1 $rDivs
+                param col=$i/$n_rings,$j/$rDivs,$nz/$WinZSlices,1
 
-            # Define parameters for radii and initial & final angles
-            param innerRadius='sqrt(($i-1)*$rDivs+1)*$r0' # mm
-            param outerRadius='sqrt($i*$rDivs+1)*$r0' # mm
-            param initialPhi='($j-1)*360/$rDivs' # degrees
-            param finalPhi='$j*360/$rDivs' # degrees
+                # Define parameters for radii and initial & final angles
+                param innerRadius='sqrt(($i-1)*$rDivs+1)*$r0' # mm
+                param outerRadius='sqrt($i*$rDivs+1)*$r0' # mm
+                param initialPhi='($j-1)*360/$rDivs' # degrees
+                param finalPhi='$j*360/$rDivs' # degrees
 
-            # Create a unique solid (to assign the detector to)
-            tubs Win_solid$i.$j innerRadius=$innerRadius outerRadius=$outerRadius initialPhi=$initialPhi finalPhi=$finalPhi length=$WinThickness
+                # Create a unique solid (to assign the detector to)
+                tubs Win_solid$i.$j innerRadius=$innerRadius outerRadius=$outerRadius initialPhi=$initialPhi finalPhi=$finalPhi length=$WinThickness
 
-            # Create detector
-            detector Win solid=Win_solid$i.$j material=$mat color=$col format=ASCII
+                # Create detector
+                detector Win solid=Win_solid$i.$j material=$mat color=$col format=ASCII
 
-            # Place entrance window
-            place Win x=$beamX y=$beamY z=$WinInZ rename=WinIn$i.$j
+                # Place entrance window
+                place Win x=$beamX y=$beamY z='$WinInZ-($nz-1)*$WinThickness' rename=WinIn$i.$j.$nz
 
-            # Place exit window
-            place Win x=$beamX y=$beamY z=$WinOutZ rename=WinOut$i.$j
-        enddo
-        '
-    endif
+                # Place exit window
+                place Win x=$beamX y=$beamY z='$WinOutZ+($nz-1)*$WinThickness' rename=WinOut$i.$j.$nz
+            enddo
+            '
+        endif
+    enddo
 enddo
