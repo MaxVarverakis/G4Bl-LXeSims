@@ -29,11 +29,11 @@ param zDiv=12
 param WinZSlices=2 # number of slices in z
 param WinThickness=2/$WinZSlices # mm
 param Rmax=10 # total radius of Be window [mm]
-param rDivs=12 # number of cuts in theta
+param r_Divs=12 # number of cuts in theta
 param n_rings=7 # number of annuli to partition the window (doesn't include the center circle)
 
 # We set r0 such that the final annulus has an outer radius equal to desired window radius
-param rScaleFactor=sqrt($n_rings*$rDivs+1)
+param rScaleFactor=sqrt($n_rings*$r_Divs+1)
 param r0=$Rmax/$rScaleFactor # center circle radius [mm]
 
 param WinInZ='$LXeFront-$d/2-$WinThickness/2'
@@ -57,7 +57,7 @@ param mat=Be # define the window material as separate parameter so it can be eas
 
 # Solely for collecting particle data at the end of the LXe target
 # no `place` needed
-zntuple zDet z='$LXeFront+$zDiv*$d+$d/2' format=ASCII file=''
+zntuple zDet z='$LXeFront+$zDiv*$d+$d/2' format=ASCII file='zDet.txt'
 
 # This can be ignored. There in case you want to check that the beam radius is ~6 mm
 # virtualdetector vRadCheck radius=6 length=10^-6 material=Vacuum color=0,0,1 format=ASCII
@@ -93,14 +93,14 @@ do nz 1 $WinZSlices
             '
         else
             '
-            do j 1 $rDivs
-                param col=$i/$n_rings,$j/$rDivs,$nz/$WinZSlices,1
+            do j 1 $r_Divs
+                param col=$i/$n_rings,$j/$r_Divs,$nz/$WinZSlices,1
 
                 # Define parameters for radii and initial & final angles
-                param innerRadius='sqrt(($i-1)*$rDivs+1)*$r0' # mm
-                param outerRadius='sqrt($i*$rDivs+1)*$r0' # mm
-                param initialPhi='($j-1)*360/$rDivs' # degrees
-                param finalPhi='$j*360/$rDivs' # degrees
+                param innerRadius='sqrt(($i-1)*$r_Divs+1)*$r0' # mm
+                param outerRadius='sqrt($i*$r_Divs+1)*$r0' # mm
+                param initialPhi='($j-1)*360/$r_Divs' # degrees
+                param finalPhi='$j*360/$r_Divs' # degrees
 
                 # Create a unique solid (to assign the detector to)
                 tubs Win_solid$i.$j innerRadius=$innerRadius outerRadius=$outerRadius initialPhi=$initialPhi finalPhi=$finalPhi length=$WinThickness

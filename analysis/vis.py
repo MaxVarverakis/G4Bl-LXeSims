@@ -6,13 +6,17 @@ n_events = 1000
 beamX = 45 # mm
 beamY = 45 # mm
 
-df = pd.read_csv('pedd.txt', skiprows=5, delim_whitespace=True)
+df = pd.read_csv('LXe_Edep.txt', skiprows=6, delim_whitespace=True)
+WinIn = pd.read_csv('EntranceWin_Edep.txt', skiprows=6, delim_whitespace=True)
+WinOut = pd.read_csv('ExitWin_Edep.txt', skiprows=6, delim_whitespace=True)
+
 xz = df[['z','x','edep','pedd']][df['y'] == df['y'].max()//2].to_numpy()
 xy = df[['x','y','edep','pedd']][df['z'] == df['z'].max()].to_numpy()
 
 ######## Mean Edep per incident e- ########
 
 print(f'######### Mean Edep/incident e- #########\n{df["edep"].sum()/n_events:.2f} MeV/e-\n')
+print(f'Entrance Window: {WinIn["edep"].sum()/n_events:.2f} MeV/e-\nExit Window:\t{WinOut["edep"].sum()/n_events:.2f} MeV/e-\n')
 
 ######## Exiting Positrons ########
 
@@ -43,7 +47,7 @@ plt.ylabel('x [Detector No.]')
 cb = plt.colorbar(label=r'$E_{dep}/\mathrm{incident}\ e^- \left[\mathrm{MeV}\right]$')
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))
-plt.close()
+plt.show()
 
 plt.hist2d(x=xy[:,0], y=xy[:,1], weights=xy[:,2]/n_events, cmap='inferno')
 plt.xlabel('x [Detector No.]')
@@ -51,7 +55,7 @@ plt.ylabel('y [Detector No.]')
 cb = plt.colorbar(label=r'$E_{dep}/\mathrm{incident}\ e^- \left[\mathrm{MeV}\right]$')
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))
-plt.close()
+plt.show()
 
 ######## PEDD plots #########
 
