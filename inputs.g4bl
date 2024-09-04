@@ -1,7 +1,11 @@
 /global/fieldMgr/eventTimeLimit 10000 s
 
-# QGSP is the "default" physics use-case for HEP
-physics QGSP
+# Redirect stdout & stderr to a file
+output g4bl.out
+
+# QGSP is the "default" physics use-case for HEP, but obsolete
+# FTFP_BERT : For calorimetry, colliders, and general HEP
+physics FTFP_BERT
 
 ###########################################################
 # * Not needed? *
@@ -12,7 +16,7 @@ physics QGSP
 
 # LXe parameters
 param w=100 #  total x- and y-dimension mm
-param d=5.0 # cube dimensions for each detector [mm]
+param d=10.0 # cube dimensions for each detector [mm]
 param n='$w/$d-1' # n+1 = number of slices in x- and y-directions
 
 # Aim for ~4.5 Radiation lengths
@@ -30,7 +34,8 @@ param beamY=45 # mm
 
 # Window parameters
 param z_Divs=1 # number of slices in z
-param WinThickness=2/$z_Divs # mm
+param WinTotThickness=2.0 # mm
+param WinThickness=$WinTotThickness/$z_Divs # mm
 param Rmax=10 # total radius of Be window [mm]
 param r_Divs=24 # number of cuts in theta
 param n_rings=7 # number of annuli to partition the window (doesn't include the center circle)
@@ -55,16 +60,18 @@ beam gaussian meanMomentum=$P nEvents=10000 particle=e- beamZ=0.0 beamX=$beamX b
 # For LXe target
 detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ASCII
 
-# For target windows
+# For windows
 param mat=Be # define the window material as separate parameter so it can be easily changed
 
-# Solely for collecting particle data at the end of the LXe target
+# Solely for collecting particle data at the end of the LXe target and exit window
 # no `place` needed
 zntuple zDet z='$LXeFront+$zDiv*$d+$d/2' format=ASCII file='zDet.txt'
+zntuple zWinDet z='$WinOutZ+$WinThickness/2' format=ASCII file='zWinDet.txt'
 
 # This can be ignored. There in case you want to check that the beam radius is ~6 mm
-# virtualdetector vRadCheck radius=6 length=10^-6 material=Vacuum color=0,0,1 format=ASCII
+#virtualdetector vRadCheck radius=6 length=10^-6 material=Vacuum color=0,0,1 format=ASCII
 # place vRadCheck x=$beamX y=$beamY z='$LXeFront-5-2*$WinThickness' rename=WinIn
+#place vRadCheck x=$beamX y=$beamY z='$WinOutZ+$WinThickness/2+.5*10^-6' rename=WinOut
 
 ###########################################################
 #                   Detector Placement                    #
@@ -77,7 +84,7 @@ do i 0 $n
             param x=$i*$d
             param y=$j*$d
             param z='$k*$d + $LXeFront'
-            param color=$i/$n,$j/$n,$k/$n,1
+            param color=$i/$n,$j/$n,$k/$zDiv,1
             place Det x=$x y=$y z=$z color=$color rename=Det$i.$j.$k
         enddo
     enddo

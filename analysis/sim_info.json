@@ -3,7 +3,7 @@
     "beamX": 45,
     "beamY": 45,
     "LXeDivs": [10, 10, 13],
-    "LXeCubeDim": [0.5, 0.5, 0.5],
+    "LXeCubeDim": [1.0, 1.0, 1.0],
     "rho": {
         "LXe": 2.953, 
         "Be": 1.848, 

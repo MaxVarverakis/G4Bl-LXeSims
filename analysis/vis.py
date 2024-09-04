@@ -81,10 +81,10 @@ for i in range(2):
 
     ax[i].add_collection(collection)
     ax[i].autoscale_view()
-    ax[i].set_xlabel('x [mm]')
+    ax[i].set_xlabel('x [cm]')
     ax[i].set_title(names[i])
     ax[i].set_aspect('equal')
-ax[0].set_ylabel('y [mm]')
+ax[0].set_ylabel('y [cm]')
 cb = fig.colorbar(collection, ax=ax[1], label=r'$E_{dep}\ \left[\mathrm{MeV}\right]$')
 cb.update_normal(collection)
 cb.formatter.set_useMathText(True)
@@ -96,25 +96,30 @@ plt.show()
 
 ep = pd.read_csv('zDet.txt', skiprows=3, names='x y z Px Py Pz t PDGid EventID TrackID ParentID Weight'.split(' '), delim_whitespace=True).drop(index=0)
 ep = ep[ep['PDGid'] == -11] # filter out positrons
-ke = np.sqrt(np.square(ep[['Px','Py','Pz']]).sum(axis=1))
+ke_p = np.sqrt(np.square(ep[['Px','Py','Pz']]).sum(axis=1))
+
+ep_win = pd.read_csv('zWinDet.txt', skiprows=3, names='x y z Px Py Pz t PDGid EventID TrackID ParentID Weight'.split(' '), delim_whitespace=True).drop(index=0)
+ep_win = ep_win[ep_win['PDGid'] == -11] # filter out positrons
+ke = np.sqrt(np.square(ep_win[['Px','Py','Pz']]).sum(axis=1))
 
 # Filter outgoing positrons with transverse displacement < 10mm and energy between 2 MeV and 20 MeV
-mask = (np.sqrt((ep['x'] - beamX)**2 + (ep['y'] - beamY)**2) < 10) & (ke > 2) & (ke < 20) # mm
+mask = (np.sqrt((ep_win['x'] - beamX)**2 + (ep_win['y'] - beamY)**2) < 10) & (ke > 2) & (ke < 20) # mm
 
 n_ep = ep.shape[0] # total number of e^+ exiting the target
-print(f'######### Normalized Positron Yield #########\nRaw:\t {n_ep/n_events} e+/incident e-\nFiltered: {ep[mask].shape[0]/n_events} e+/incident e-\n') # e^+ yield
+n_ep_win = ep_win.shape[0] # total number of e^+ exiting the target
+print(f'######### Normalized Positron Yield #########\nRaw (LXe Exit): {n_ep/n_events} e+/incident e-\nFiltered:\t {ep_win[mask].shape[0]/n_events} e+/incident e-\n') # e^+ yield
 # print(f'Yield with cutoffs: {ep[mask].shape[0]/n_events} e+/incident e-') # e^+ yield
 
-plt.hist(ke, bins = 75, range = (0, 200))
+plt.hist(ke_p, bins = 75, range = (0, 200))
 plt.hist(ke[mask], bins = 75, range = (0, 200))
 plt.xlim(0, 200)
 plt.xlabel(r'Outgoing $e^+$ Energy [MeV]')
 plt.ylabel(r'$e^+$ per $10^3$ Incident $e^-$')
 plt.legend(['No filter','Filtered'])
-plt.close()
+plt.show()
 
 
-######## Total Edep plots ########
+######## Total LXe Edep plots ########
 
 plt.hist2d(x=xz[:,0], y=xz[:,1], weights=xz[:,2]/n_events, cmap='inferno')
 plt.xlabel('z [Detector No.]')
@@ -133,7 +138,7 @@ cb.formatter.set_powerlimits((0, 0))
 plt.close()
 
 
-######## PEDD plots #########
+######## LXe PEDD plots #########
 
 plt.hist2d(x=xz[:,0], y=xz[:,1], weights=xz[:,3], cmap='inferno')
 plt.xlabel('z [Detector No.]')
