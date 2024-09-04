@@ -37,8 +37,9 @@ param z_Divs=1 # number of slices in z
 param WinTotThickness=2.0 # mm
 param WinThickness=$WinTotThickness/$z_Divs # mm
 param Rmax=10 # total radius of Be window [mm]
-param r_Divs=24 # number of cuts in theta
-param n_rings=7 # number of annuli to partition the window (doesn't include the center circle)
+param r_Divs=1 # number of cuts in theta
+param n_rings=200 # number of annuli to partition the window (doesn't include the center circle)
+param mat=Be # define the window material as separate parameter so it can be easily changed
 
 # Set r0 such that the final annulus has an outer radius equal to desired window radius
 param rScaleFactor=sqrt($n_rings*$r_Divs+1)
@@ -59,9 +60,6 @@ beam gaussian meanMomentum=$P nEvents=10000 particle=e- beamZ=0.0 beamX=$beamX b
 
 # For LXe target
 detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ASCII
-
-# For windows
-param mat=Be # define the window material as separate parameter so it can be easily changed
 
 # Solely for collecting particle data at the end of the LXe target and exit window
 # no `place` needed

@@ -11,8 +11,8 @@
     },
     "WinProperties": {
         "r_window": 1.0,
-        "n_rings": 7,
-        "r_Divs": 24,
+        "n_rings": 200,
+        "r_Divs": 1,
         "Win_thickness": 0.2,
         "z_Divs": 1
     }
