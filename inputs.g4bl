@@ -15,31 +15,31 @@ physics FTFP_BERT
 ###########################################################
 
 # LXe parameters
-param w=100 #  total x- and y-dimension mm
-param d=10.0 # cube dimensions for each detector [mm]
+param w=70 #  total x- and y-dimension mm
+param d=5.0 # cube dimensions for each detector [mm]
 param n='$w/$d-1' # n+1 = number of slices in x- and y-directions
 
-# Aim for ~4.5 Radiation lengths
+# Aim for ~3.5 Radiation lengths
 param RL=28.720 # radiation length of LXe in mm
-param L_RL=4.5 # desired thickness of LXe in radiation lengths
+param L_RL=3.5 # desired thickness of LXe in radiation lengths
 param zDiv='ceil($RL*$L_RL/$d-1)' # rounds up to integer value to partition LXe in z-direction
 
 # offset the LXe target in z
 param LXeFront=1000 # mm
 
 # Beam parameters
-param P=10000.0 # GeV/c
-param beamX=45 # mm
-param beamY=45 # mm
+param P=3000.0 # 3 GeV/c
+param beamX='($w-$d)/2' # mm
+param beamY='($w-$d)/2' # mm
 
 # Window parameters
 param z_Divs=1 # number of slices in z
 param WinTotThickness=2.0 # mm
 param WinThickness=$WinTotThickness/$z_Divs # mm
 param Rmax=10 # total radius of Be window [mm]
-param r_Divs=1 # number of cuts in theta
-param n_rings=200 # number of annuli to partition the window (doesn't include the center circle)
-param mat=Be # define the window material as separate parameter so it can be easily changed
+param r_Divs=24 # number of cuts in theta
+param n_rings=12 # number of annuli to partition the window (doesn't include the center circle)
+param mat=Al # define the window material as separate parameter so it can be easily changed
 
 # Set r0 such that the final annulus has an outer radius equal to desired window radius
 param rScaleFactor=sqrt($n_rings*$r_Divs+1)
@@ -51,7 +51,7 @@ param WinOutZ='$LXeFront+$zDiv*$d+$d/2+$WinThickness/2'
 
 # Set e- beam parameters
 # 2*sigmaR = 6 mm = 2*sqrt(2)*sigmaX ==> sigmaX (and sigmaY) = 3/sqrt(2) mm ~ 2.12 mm
-beam gaussian meanMomentum=$P nEvents=10000 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100 meanMomentum=$P
+beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100 meanMomentum=$P
 
 
 ###########################################################
@@ -69,7 +69,8 @@ zntuple zWinDet z='$WinOutZ+$WinThickness/2' format=ASCII file='zWinDet.txt'
 # This can be ignored. There in case you want to check that the beam radius is ~6 mm
 #virtualdetector vRadCheck radius=6 length=10^-6 material=Vacuum color=0,0,1 format=ASCII
 # place vRadCheck x=$beamX y=$beamY z='$LXeFront-5-2*$WinThickness' rename=WinIn
-#place vRadCheck x=$beamX y=$beamY z='$WinOutZ+$WinThickness/2+.5*10^-6' rename=WinOut
+# place vRadCheck x=$beamX y=$beamY z='$WinOutZ+$WinThickness/2+.5*10^-6' rename=WinOut
+
 
 ###########################################################
 #                   Detector Placement                    #

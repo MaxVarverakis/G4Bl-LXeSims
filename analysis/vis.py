@@ -10,21 +10,28 @@ with open("../analysis/sim_info.json", "r") as f:
     info = json.load(f)
 
 n_events = info["n_events"]
-beamX = info["beamX"] # mm
-beamY = info["beamY"] # mm
+beamX = (info["LXeDim"][0]-info["LXeCubeDim"][0])/2 * 10 # mm
+beamY = (info["LXeDim"][1]-info["LXeCubeDim"][1])/2 * 10 # mm
 
 df = pd.read_csv('LXe_Edep.txt', skiprows=6, delim_whitespace=True)
 WinIn = pd.read_csv('EntranceWin_Edep.txt', skiprows=6, delim_whitespace=True)
 WinOut = pd.read_csv('ExitWin_Edep.txt', skiprows=6, delim_whitespace=True)
 
-xz = df[['z','x','edep','pedd']][df['y'] == df['y'].max()//2].to_numpy()
+xz = df[['x','z','edep','pedd']][df['y'] == (df['y'].max()-info["LXeDim"][1]/2)].to_numpy()
 xy = df[['x','y','edep','pedd']][df['z'] == df['z'].max()].to_numpy()
 
+def edges(idx):
+    return np.arange(0, info["LXeDim"][idx]+info["LXeCubeDim"][idx], info["LXeCubeDim"][idx])
+xzBin = [edges(2), edges(0)]
+xyBin = [edges(0), edges(1)]
 
 ######## Mean Edep per incident e- ########
 
 print(f'######### Mean Edep/incident e- #########\n{df["edep"].sum()/n_events:.2f} MeV/e-\n')
 print(f'Entrance Window: {WinIn["edep"].sum()/n_events:.2f} MeV/e-\nExit Window:\t{WinOut["edep"].sum()/n_events:.2f} MeV/e-\n')
+
+print(f'\n######### Total PEDD/{n_events:.0f} e- #########\n{df["pedd"].sum():.2e} J/g\n')
+print(f'Entrance Window: {WinIn["pedd"].sum():.2e} J/g\nExit Window:\t {WinOut["pedd"].sum():.2e} J/g\n')
 
 
 ######## Window Edep Plots ########
@@ -63,7 +70,7 @@ for i in range(0, n_rings+1):
 base_collection = PatchCollection(patches, cmap='inferno')
 # collection.set_clim(vmin=0, vmax=.5)
 
-WinKey = 'edep' # edep or pedd
+WinKey = 'pedd' # edep or pedd
 fig, ax = plt.subplots(1, 2, sharey=True, figsize=(12,6), constrained_layout=True)
 names = ['Entrance Window', 'Exit Window']
 z_slice = z_Divs # pick out a z-slice from 1 to z_Divs
@@ -85,7 +92,8 @@ for i in range(2):
     ax[i].set_title(names[i])
     ax[i].set_aspect('equal')
 ax[0].set_ylabel('y [cm]')
-cb = fig.colorbar(collection, ax=ax[1], label=r'$E_{dep}\ \left[\mathrm{MeV}\right]$')
+cb = fig.colorbar(collection, ax=ax[1], label=r'$PEDD\ \left[\ \mathrm{J}\cdot g^{-1}\right]$')
+# cb = fig.colorbar(collection, ax=ax[1], label=r'$E_{dep}\ \left[\mathrm{MeV}\right]$')
 cb.update_normal(collection)
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))
@@ -116,41 +124,43 @@ plt.xlim(0, 200)
 plt.xlabel(r'Outgoing $e^+$ Energy [MeV]')
 plt.ylabel(r'$e^+$ per $10^3$ Incident $e^-$')
 plt.legend(['No filter','Filtered'])
-plt.show()
+plt.close()
 
 
 ######## Total LXe Edep plots ########
 
-plt.hist2d(x=xz[:,0], y=xz[:,1], weights=xz[:,2]/n_events, cmap='inferno')
-plt.xlabel('z [Detector No.]')
-plt.ylabel('x [Detector No.]')
-cb = plt.colorbar(label=r'$E_{dep}/\mathrm{incident}\ e^- \left[\mathrm{MeV}\right]$')
+plt.hist2d(x=xz[:,1], y=xz[:,0], weights=xz[:,2]/n_events, bins=xzBin, cmap='inferno')
+plt.xlabel('z [cm]')
+plt.ylabel('x [cm]')
+cb = plt.colorbar(label=r'$E_{dep}/\mathrm{incident}\ e^-\ \left[\mathrm{MeV}\right]$')
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))
-plt.close()
+# plt.gca().set_aspect(aspect=info["LXeDim"][0]/info["LXeDim"][1])
+plt.show()
 
-plt.hist2d(x=xy[:,0], y=xy[:,1], weights=xy[:,2]/n_events, cmap='inferno')
-plt.xlabel('x [Detector No.]')
-plt.ylabel('y [Detector No.]')
-cb = plt.colorbar(label=r'$E_{dep}/\mathrm{incident}\ e^- \left[\mathrm{MeV}\right]$')
+plt.hist2d(x=xy[:,0], y=xy[:,1], weights=xy[:,2]/n_events, bins=xyBin, cmap='inferno')
+plt.xlabel('x [cm]')
+plt.ylabel('y [cm]')
+cb = plt.colorbar(label=r'$E_{dep}/\mathrm{incident}\ e^-\ \left[\mathrm{MeV}\right]$')
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))
-plt.close()
+plt.show()
 
 
 ######## LXe PEDD plots #########
 
-plt.hist2d(x=xz[:,0], y=xz[:,1], weights=xz[:,3], cmap='inferno')
-plt.xlabel('z [Detector No.]')
-plt.ylabel('x [Detector No.]')
+plt.hist2d(x=xz[:,1], y=xz[:,0], weights=xz[:,3], bins=xzBin, cmap='inferno')
+plt.xlabel('z [cm]')
+plt.ylabel('x [cm]')
 cb = plt.colorbar(label=r'PEDD $\left[\mathrm{J}\cdot g^{-1}\right]$')
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))
+# plt.gca().set_aspect(aspect=info["LXeDim"][0]/info["LXeDim"][2])
 plt.close()
 
-plt.hist2d(x=xy[:,0], y=xy[:,1], weights=xy[:,3], cmap='inferno')
-plt.xlabel('x [Detector No.]')
-plt.ylabel('y [Detector No.]')
+plt.hist2d(x=xy[:,0], y=xy[:,1], weights=xy[:,3], bins=xyBin, cmap='inferno')
+plt.xlabel('x [cm]')
+plt.ylabel('y [cm]')
 cb = plt.colorbar(label=r'PEDD $\left[\mathrm{J}\cdot g^{-1}\right]$')
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))

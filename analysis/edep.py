@@ -12,12 +12,12 @@ with open("../analysis/sim_info.json", "r") as f:
 headers = ["x", "y", "z", "edep", "pedd"]
 
 # Set window material (str: must be a `rho_Window` key)
-WinMat = "Be"
+WinMat = "Al"
 
 # LXe divisions in x,y,z
-nx = info["LXeDivs"][0]
-ny = info["LXeDivs"][1]
-nz = info["LXeDivs"][2]
+nx = int(info["LXeDim"][0]/info["LXeCubeDim"][0])
+ny = int(info["LXeDim"][1]/info["LXeCubeDim"][1])
+nz = int(info["LXeDim"][2]/info["LXeCubeDim"][2])
 
 Edep = np.zeros((nx, ny, nz))
 
@@ -49,12 +49,21 @@ m_tub = info["rho"][WinMat] * tub_vol # g
 #    Function for extracting Edep/PEDD    #
 ###########################################
 
-def get_Edep(df: pd.DataFrame, i: int, j: int, k: int, mass: float) -> pd.DataFrame:
+def get_Edep(df: pd.DataFrame, i: int, j: int, k: int, mass: float, LXe: bool) -> pd.DataFrame:
+    '''
+    LXe (bool) :
+        If `True`, "x","y","z" get converted to cube center coordinates in cm. If `False`, they stay as indices.
+    '''
     # total Edep for the detector in MeV
     Edep_tot = df["Edep"].sum()
 
     # Calculate energy deposition density [J/g]
     pedd = Edep_tot * 1e6 * e_charge / mass
+
+    if LXe:
+        i = (i+0.5)*cube_dim[0],
+        j = (j+0.5)*cube_dim[1],
+        k = (k+0.5)*cube_dim[2],
 
     df_temp = pd.DataFrame(
         {
@@ -88,7 +97,7 @@ for i in range(0, nx):
                 delim_whitespace=True,
             )
 
-            df_temp = get_Edep(df, i, j, k, m_cube)
+            df_temp = get_Edep(df, i, j, k, m_cube, True)
 
             # Append the result to the DataFrame
             df_LXe = pd.concat([df_LXe,df_temp])
@@ -114,7 +123,7 @@ for i in range(0, n_rings+1):
                 delim_whitespace=True,
             )
             
-            df_temp = get_Edep(df, i, j, k, m_tub)
+            df_temp = get_Edep(df, i, j, k, m_tub, False)
 
             # Append the result to the DataFrame
             WinIn = pd.concat([WinIn, df_temp]) # Roundoff error?
@@ -126,7 +135,7 @@ for i in range(0, n_rings+1):
                 delim_whitespace=True,
             )
 
-            df_temp = get_Edep(df, i, j, k, m_tub)
+            df_temp = get_Edep(df, i, j, k, m_tub, False)
 
             # Append the result to the DataFrame
             WinOut = pd.concat([WinOut, df_temp])
