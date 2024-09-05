@@ -33,6 +33,9 @@ print(f'Entrance Window: {WinIn["edep"].sum()/n_events:.2f} MeV/e-\nExit Window:
 print(f'\n######### Total PEDD/{n_events:.0f} e- #########\n{df["pedd"].sum():.2e} J/g\n')
 print(f'Entrance Window: {WinIn["pedd"].sum():.2e} J/g\nExit Window:\t {WinOut["pedd"].sum():.2e} J/g\n')
 
+# print(f'\n######### PEDD/incident e- #########\n{df["pedd"].sum()/n_events:.2e} J/g\n')
+# print(f'Entrance Window: {WinIn["pedd"].sum()/n_events:.2e} J/g\nExit Window:\t {WinOut["pedd"].sum()/n_events:.2e} J/g\n')
+
 
 ######## Window Edep Plots ########
 

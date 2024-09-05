@@ -12,7 +12,7 @@ with open("../analysis/sim_info.json", "r") as f:
 headers = ["x", "y", "z", "edep", "pedd"]
 
 # Set window material (str: must be a `rho_Window` key)
-WinMat = "Al"
+WinMat = "Be"
 
 # LXe divisions in x,y,z
 nx = int(info["LXeDim"][0]/info["LXeCubeDim"][0])

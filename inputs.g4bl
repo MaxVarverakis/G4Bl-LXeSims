@@ -15,14 +15,16 @@ physics FTFP_BERT
 ###########################################################
 
 # LXe parameters
-param w=70 #  total x- and y-dimension mm
-param d=5.0 # cube dimensions for each detector [mm]
+param w=70 #  total x- and y-dimension [mm]
+param d=2.0 # cube dimensions for each detector [mm]
 param n='$w/$d-1' # n+1 = number of slices in x- and y-directions
+param LXeZ=100 # total z-dimension [mm]
 
 # Aim for ~3.5 Radiation lengths
-param RL=28.720 # radiation length of LXe in mm
-param L_RL=3.5 # desired thickness of LXe in radiation lengths
-param zDiv='ceil($RL*$L_RL/$d-1)' # rounds up to integer value to partition LXe in z-direction
+#param RL=28.720 # radiation length of LXe in mm
+#param L_RL=3.5 # desired thickness of LXe in radiation lengths
+#param zDiv='ceil($RL*$L_RL/$d-1)' # rounds up to integer value to partition LXe in z-direction
+param zDiv='$LXeZ/$d-1' # rounds up to integer value to partition LXe in z-direction
 
 # offset the LXe target in z
 param LXeFront=1000 # mm
@@ -39,7 +41,7 @@ param WinThickness=$WinTotThickness/$z_Divs # mm
 param Rmax=10 # total radius of Be window [mm]
 param r_Divs=24 # number of cuts in theta
 param n_rings=12 # number of annuli to partition the window (doesn't include the center circle)
-param mat=Al # define the window material as separate parameter so it can be easily changed
+param mat=Be # define the window material as separate parameter so it can be easily changed
 
 # Set r0 such that the final annulus has an outer radius equal to desired window radius
 param rScaleFactor=sqrt($n_rings*$r_Divs+1)
@@ -59,7 +61,7 @@ beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=0.0 beamX=$beamX be
 ###########################################################
 
 # For LXe target
-detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ASCII
+detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ROOT
 
 # Solely for collecting particle data at the end of the LXe target and exit window
 # no `place` needed
