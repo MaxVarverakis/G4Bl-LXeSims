@@ -9,7 +9,7 @@
     },
     "WinProperties": {
         "r_window": 1.0,
-        "Win_thickness": 0.5,
+        "Win_thickness": 0.2,
         "z_Divs": 1
     }
 }
