@@ -71,17 +71,18 @@ for i in range(0, n_rings+1):
 
 # Create a patch collection with the simulation data as colors
 base_collection = PatchCollection(patches, cmap='inferno')
-# collection.set_clim(vmin=0, vmax=.5)
 
 WinKey = 'pedd' # edep or pedd
+base_collection.set_clim(vmin=0, vmax=WinOut[WinKey].max())
+
 fig, ax = plt.subplots(1, 2, sharey=True, figsize=(12,6), constrained_layout=True)
 names = ['Entrance Window', 'Exit Window']
 z_slice = z_Divs # pick out a z-slice from 1 to z_Divs
 # for z_slice in range(1, z_Divs+1):
 for i in range(2):
     WinEdep = [
-        WinIn[WinKey][WinIn['z'] == z_slice].to_numpy(),
-        WinOut[WinKey][WinOut['z'] == z_slice].to_numpy()
+        WinIn[WinKey].to_numpy(),
+        WinOut[WinKey].to_numpy()
         ]
     # WinInEdep = WinIn[WinKey][WinIn['z'] == z_slice].to_numpy()
     # WinOutEdep = WinIn[WinKey][WinOut['z'] == z_slice].to_numpy()
@@ -159,7 +160,7 @@ cb = plt.colorbar(label=r'PEDD $\left[\mathrm{J}\cdot g^{-1}\right]$')
 cb.formatter.set_useMathText(True)
 cb.formatter.set_powerlimits((0, 0))
 # plt.gca().set_aspect(aspect=info["LXeDim"][0]/info["LXeDim"][2])
-plt.close()
+plt.show()
 
 plt.hist2d(x=xy[:,0], y=xy[:,1], weights=xy[:,3], bins=xyBin, cmap='inferno')
 plt.xlabel('x [cm]')

@@ -38,12 +38,15 @@ z_Divs = info["WinProperties"]["z_Divs"] # number of z-slices in windows
 
 r0 = r_window/np.sqrt(n_rings*r_Divs+1)
 tub_vol = np.pi*r0**2*(Win_thickness/z_Divs) # cm^3
+# print(tub_vol)
 
 # Mass of a LXe cube
 m_cube = info["rho"]["LXe"] * cube_dim[0] * cube_dim[1] * cube_dim[2] # g
+# print(m_cube)
 
 # Mass of window chunk (tub)
 m_tub = info["rho"][WinMat] * tub_vol # g
+# print(m_tub)
 
 ###########################################
 #    Function for extracting Edep/PEDD    #
@@ -126,7 +129,7 @@ for i in range(0, n_rings+1):
             df_temp = get_Edep(df, i, j, k, m_tub, False)
 
             # Append the result to the DataFrame
-            WinIn = pd.concat([WinIn, df_temp]) # Roundoff error?
+            WinIn = pd.concat([WinIn, df_temp])
 
             # * Exit window *
             df = pd.read_csv(
@@ -156,6 +159,6 @@ for idx,file in enumerate(fnames):
         f.write("# x, y, z: The annulus number, angle section, and z ID of the tub in the array (if window)\n")
         f.write("# edep (energy deposition): The energy deposition in the cube, in units of J\n")
         f.write(
-            "# pedd (peak energy deposition density): The maximum energy deposition density in the cube, in units of J/g\n"
+            "# pedd (peak energy deposition density): The energy deposition density in the cube, in units of J/g\n"
         )
         list(data.values())[idx].to_csv(f, sep="\t", index=False)

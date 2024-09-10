@@ -16,7 +16,7 @@ physics FTFP_BERT
 
 # LXe parameters
 param w=70 #  total x- and y-dimension [mm]
-param d=2.0 # cube dimensions for each detector [mm]
+param d=10.0 # cube dimensions for each detector [mm]
 param n='$w/$d-1' # n+1 = number of slices in x- and y-directions
 param LXeZ=100 # total z-dimension [mm]
 
@@ -24,7 +24,7 @@ param LXeZ=100 # total z-dimension [mm]
 #param RL=28.720 # radiation length of LXe in mm
 #param L_RL=3.5 # desired thickness of LXe in radiation lengths
 #param zDiv='ceil($RL*$L_RL/$d-1)' # rounds up to integer value to partition LXe in z-direction
-param zDiv='$LXeZ/$d-1' # rounds up to integer value to partition LXe in z-direction
+param zDiv='$LXeZ/$d-1'
 
 # offset the LXe target in z
 param LXeFront=1000 # mm
@@ -47,13 +47,15 @@ param mat=Be # define the window material as separate parameter so it can be eas
 param rScaleFactor=sqrt($n_rings*$r_Divs+1)
 param r0=$Rmax/$rScaleFactor # center circle radius [mm]
 
-param WinInZ='$LXeFront-$d/2-$WinThickness/2'
-param WinOutZ='$LXeFront+$zDiv*$d+$d/2+$WinThickness/2'
+#param WinInZ='$LXeFront-$d/2-$WinThickness/2'
+#param WinOutZ='$LXeFront+$zDiv*$d+$d/2+$WinThickness/2'
+param WinInZ='$LXeFront-$WinThickness/2'
+param WinOutZ='$LXeFront+$LXeZ+$WinThickness/2'
 
 
 # Set e- beam parameters
 # 2*sigmaR = 6 mm = 2*sqrt(2)*sigmaX ==> sigmaX (and sigmaY) = 3/sqrt(2) mm ~ 2.12 mm
-beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100 meanMomentum=$P
+beam gaussian meanMomentum=$P nEvents=100 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100
 
 
 ###########################################################
@@ -61,7 +63,9 @@ beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=0.0 beamX=$beamX be
 ###########################################################
 
 # For LXe target
-detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ROOT
+#detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ROOT
+detector Det width=70 height=70 length=100 material=lXe color=0,0,0 format=ASCII
+place Det x=$beamX y=$beamY z=$LXeFront+100/2 color=1,1,0,.85
 
 # Solely for collecting particle data at the end of the LXe target and exit window
 # no `place` needed
@@ -79,17 +83,17 @@ zntuple zWinDet z='$WinOutZ+$WinThickness/2' format=ASCII file='zWinDet.txt'
 ###########################################################
 
 # Place a 3D grid of cube detectors to fill out the LXe target
-do i 0 $n
-    do j 0 $n
-        do k 0 $zDiv
-            param x=$i*$d
-            param y=$j*$d
-            param z='$k*$d + $LXeFront'
-            param color=$i/$n,$j/$n,$k/$zDiv,1
-            place Det x=$x y=$y z=$z color=$color rename=Det$i.$j.$k
-        enddo
-    enddo
-enddo
+#do i 0 $n
+#    do j 0 $n
+#        do k 0 $zDiv
+#            param x=$i*$d
+#            param y=$j*$d
+#            param z='$k*$d + $LXeFront'
+#            param color=$i/$n,$j/$n,$k/$zDiv,1
+#            place Det x=$x y=$y z=$z color=$color rename='Det$i.$j.$k'
+#        enddo
+#    enddo
+#enddo
 
 # Place sections of annuli to fill disk geometry of windows 
 # this ensures that the volume of each slice is equivalent

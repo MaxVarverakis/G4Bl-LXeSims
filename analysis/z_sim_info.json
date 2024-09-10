@@ -1,16 +1,14 @@
 {
     "n_events": 1e3,
     "LXeDim": [7, 7, 10],
-    "LXeCubeDim": [0.5, 0.5, 0.5],
+    "LXeSliceDim": [7, 7, 0.01],
     "rho": {
-        "LXe": 2.953, 
-        "Be": 1.848, 
+        "LXe": 2.953,
+        "Be": 1.848,
         "Al": 2.699
     },
     "WinProperties": {
         "r_window": 1.0,
-        "r_Divs": 24,
-        "n_rings": 12,
         "Win_thickness": 0.5,
         "z_Divs": 1
     }
