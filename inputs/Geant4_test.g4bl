@@ -1,12 +1,9 @@
-param maxStep=0.1 minStep=0.001 zTolerance=0.1 eventTimeLimit=10000
-# ^ units:    mm            mm              mm                    s
-
 # Redirect stdout & stderr to a file
 output g4bl.out
 
 # QGSP is the "default" physics use-case for HEP, but obsolete
 # FTFP_BERT : For calorimetry, colliders, and general HEP
-physics FTFP_BERT # minRangeCut=1.E-3
+physics FTFP_BERT
 
 ###########################################################
 # * Not needed? *
@@ -17,15 +14,14 @@ physics FTFP_BERT # minRangeCut=1.E-3
 
 # LXe parameters
 
-param w=70 #  total x- and y-dimension (mm)
-param d=0.1 # slice thickness for each detector (mm)
-
 # 10 cm ~ 3.5 Radiation lengths of LXe
-param LXeZ=100 # total z-dimension [mm]
-param zDiv='$LXeZ/$d-1'
+param RL=28.72 # radiation lenth of LXe in mm
+param L_RL=3.5 # thickness in radiation lengths
+param w=100 #  total x- and y-dimension [mm]
+param LXeZ='$RL * $L_RL' # total z-dimension [mm]
 
 # offset the LXe target in z
-param LXeFront=$LXeZ/2 # LXe z offset (mm)
+param LXeFront='$LXeZ/2' # LXe z offset (mm)
 
 # Beam parameters
 param P=3000.0 # 3 GeV/c
@@ -35,7 +31,7 @@ param beamY=0 # mm
 
 # Window parameters
 param WinThickness=0.5 # mm
-param Rmax=10.0 # total radius of window (mm)
+param Rmax=10 # total radius of Be window (mm)
 param mat=Be # define the window material as separate parameter so it can be easily changed
 
 param WinInZ='-$WinThickness/2'
@@ -51,7 +47,7 @@ beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=-1000.0 beamX=$beam
 ###########################################################
 
 # For LXe target
-detector Det width=$w height=$w length=$d material=lXe color=0,0,0 coordinates=global format=ASCII
+detector Det width=$w height=$w length=$LXeZ material=lXe color=0,0,0 coordinates=global format=ASCII
 
 # For windows
 detector Win radius=$Rmax length=$WinThickness material=$mat color=1,0,0,1 coordinates=centerline format=ASCII
@@ -68,17 +64,12 @@ zntuple zWinDet z='$WinOutZ+$WinThickness/2' format=ASCII coordinates=centerline
 ###########################################################
 
 # Place LXe
-#place Det x=$beamX y=$beamY z=$LXeFront color=0,0,1,.8 perTrack=1
-
-# Place z-slices of detectors to fill out the LXe target
-
-do k 0 $zDiv
-    param z='($k+1/2)*$d'
-    param color=.5,0,$k/$zDiv,.8
-    place Det x=$beamX y=$beamY z=$z color=$color perTrack=1 rename='Det$k'
-enddo
-ntuple DetsAll detectors=Det* file=LXe union=1 format=ASCII
+place Det x=$beamX y=$beamY z=$LXeFront color=0,0,1,.8 rename=LXe perTrack=1
 
 # Place windows
 place Win x=$beamX y=$beamY z=$WinInZ rename=WinIn perTrack=1
 place Win x=$beamX y=$beamY z=$WinOutZ rename=WinOut perTrack=1
+
+# Test vacuum detector
+#detector Det width=100 height=100 length=1 material=Vacuum color=0,1,0,.85 coordinates=global format=ASCII
+#place Det x=$beamX y=$beamY z=-10 rename=VacDet perTrack=1

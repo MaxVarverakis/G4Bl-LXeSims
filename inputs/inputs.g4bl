@@ -31,6 +31,7 @@ param LXeFront=1000 # mm
 
 # Beam parameters
 param P=3000.0 # 3 GeV/c
+param sigmaR=3.0 # mm
 param beamX='($w-$d)/2' # mm
 param beamY='($w-$d)/2' # mm
 
@@ -54,8 +55,7 @@ param WinOutZ='$LXeFront+$LXeZ+$WinThickness/2'
 
 
 # Set e- beam parameters
-# 2*sigmaR = 6 mm = 2*sqrt(2)*sigmaX ==> sigmaX (and sigmaY) = 3/sqrt(2) mm ~ 2.12 mm
-beam gaussian meanMomentum=$P nEvents=100 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=3/sqrt(2) sigmaY=3/sqrt(2) sigmaXp=0.000100 sigmaYp=0.000100
+beam gaussian meanMomentum=$P nEvents=100 particle=e- beamZ=0.0 beamX=$beamX beamY=$beamY sigmaX=$sigmaR sigmaY=$sigmaR sigmaXp=0.000100 sigmaYp=0.000100
 
 
 ###########################################################
@@ -65,7 +65,6 @@ beam gaussian meanMomentum=$P nEvents=100 particle=e- beamZ=0.0 beamX=$beamX bea
 # For LXe target
 #detector Det width=$d height=$d length=$d material=lXe color=0,0,0 format=ROOT
 detector Det width=70 height=70 length=100 material=lXe color=0,0,0 format=ASCII
-place Det x=$beamX y=$beamY z=$LXeFront+100/2 color=1,1,0,.85
 
 # Solely for collecting particle data at the end of the LXe target and exit window
 # no `place` needed
@@ -83,17 +82,17 @@ zntuple zWinDet z='$WinOutZ+$WinThickness/2' format=ASCII file='zWinDet.txt'
 ###########################################################
 
 # Place a 3D grid of cube detectors to fill out the LXe target
-#do i 0 $n
-#    do j 0 $n
-#        do k 0 $zDiv
-#            param x=$i*$d
-#            param y=$j*$d
-#            param z='$k*$d + $LXeFront'
-#            param color=$i/$n,$j/$n,$k/$zDiv,1
-#            place Det x=$x y=$y z=$z color=$color rename='Det$i.$j.$k'
-#        enddo
-#    enddo
-#enddo
+do i 0 $n
+    do j 0 $n
+        do k 0 $zDiv
+            param x=$i*$d
+            param y=$j*$d
+            param z='$k*$d + $LXeFront'
+            param color=$i/$n,$j/$n,$k/$zDiv,1
+            place Det x=$x y=$y z=$z color=$color rename='Det$i.$j.$k'
+        enddo
+    enddo
+enddo
 
 # Place sections of annuli to fill disk geometry of windows 
 # this ensures that the volume of each slice is equivalent
