@@ -1,0 +1,46 @@
+# Redirect stdout & stderr to a file
+output g4bl.out
+
+# QGSP is the "default" physics use-case for HEP, but obsolete
+# FTFP_BERT : For calorimetry, colliders, and general HEP
+physics FTFP_BERT
+
+# Beam parameters
+param n_events=1e5
+param P=3000.0 # 3 GeV/c
+param sigmaR=3.0 # mm
+param beamX=0 # mm
+param beamY=0 # mm
+
+# Window parameters
+param WinThickness=$WinThickness # mm
+param Rmax=10 # total radius of Be window (mm)
+param mat=Be # define the window material as separate parameter so it can be easily changed
+
+param WinZ=0 # mm
+param step=0.0125 # mm
+param name='$WinThickness/$step'
+
+# Set e- beam parameters
+beam gaussian meanMomentum=$P nEvents=$n_events particle=e- beamZ=-1000.0 beamX=$beamX beamY=$beamY sigmaX=$sigmaR sigmaY=$sigmaR sigmaXp=0.000100 sigmaYp=0.000100
+
+
+###########################################################
+#                       Detectors                         #
+###########################################################
+
+# For windows
+detector Win radius=$Rmax length=$WinThickness material=$mat color=1,0,0,1 coordinates=centerline format=ASCII
+
+# Solely for collecting particle data at different z-values
+# no `place` needed
+zntuple EntranceWinDet z='$WinZ' format=ASCII coordinates=centerline file='Win'
+
+
+###########################################################
+#                   Detector Placement                    #
+###########################################################
+
+# Place window
+place Win x=$beamX y=$beamY z=$WinZ rename=Win.$name perTrack=1
+
