@@ -1,5 +1,5 @@
-start=0.0
-stop=3.0
+start=0.0125
+stop=4.0
 step=0.0125
 
 for val in $(seq $start $step $stop)

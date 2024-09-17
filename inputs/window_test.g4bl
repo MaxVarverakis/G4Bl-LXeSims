@@ -6,7 +6,7 @@ output g4bl.out
 physics FTFP_BERT
 
 # Beam parameters
-param n_events=1e5
+param n_events=2.5e5
 param P=3000.0 # 3 GeV/c
 param sigmaR=3.0 # mm
 param beamX=0 # mm
