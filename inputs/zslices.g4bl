@@ -34,9 +34,9 @@ param beamX=0 # mm
 param beamY=0 # mm
 
 # Window parameters
-param WinThickness=0.5 # mm
+param WinThickness=2.0 # mm
 param Rmax=10.0 # total radius of window (mm)
-param mat=Be # define the window material as separate parameter so it can be easily changed
+param mat=Al # define the window material as separate parameter so it can be easily changed
 
 param WinInZ='-$WinThickness/2'
 param WinOutZ='$LXeZ+$WinThickness/2'
@@ -67,11 +67,7 @@ zntuple zWinDet z='$WinOutZ+$WinThickness/2' format=ASCII coordinates=centerline
 #                   Detector Placement                    #
 ###########################################################
 
-# Place LXe
-#place Det x=$beamX y=$beamY z=$LXeFront color=0,0,1,.8 perTrack=1
-
 # Place z-slices of detectors to fill out the LXe target
-
 do k 0 $zDiv
     param z='($k+1/2)*$d'
     param color=.5,0,$k/$zDiv,.8
