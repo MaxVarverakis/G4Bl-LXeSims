@@ -34,13 +34,14 @@ param beamX=0 # mm
 param beamY=0 # mm
 
 # Window parameters
-param WinThickness=2.0 # mm
+param z_Divs=10 # number of slices in z
+param WinTotThickness=2.0 # mm
+param WinThickness=$WinTotThickness/$z_Divs # mm
 param Rmax=10.0 # total radius of window (mm)
 param mat=Al # define the window material as separate parameter so it can be easily changed
 
-param WinInZ='-$WinThickness/2'
-param WinOutZ='$LXeZ+$WinThickness/2'
-
+param WinInZ='-$WinTotThickness/2'
+param WinOutZ='$LXeZ+$WinTotThickness/2'
 
 # Set e- beam parameters
 beam gaussian meanMomentum=$P nEvents=1000 particle=e- beamZ=-1000.0 beamX=$beamX beamY=$beamY sigmaX=$sigmaR sigmaY=$sigmaR sigmaXp=0.000100 sigmaYp=0.000100
@@ -59,8 +60,8 @@ detector Win radius=$Rmax length=$WinThickness material=$mat color=1,0,0,1 coord
 # Solely for collecting particle data at the end of the LXe target and exit window
 # no `place` needed
 zntuple zDet z='$LXeFront+$LXeZ/2' format=ASCII coordinates=centerline file='zDet.txt'
-zntuple EntranceWinDet z='$WinInZ-$WinThickness/2' format=ASCII coordinates=centerline file='EntranceWinDet.txt'
-zntuple zWinDet z='$WinOutZ+$WinThickness/2' format=ASCII coordinates=centerline file='zWinDet.txt'
+zntuple EntranceWinDet z='$WinInZ-$WinTotThickness/2' format=ASCII coordinates=centerline file='EntranceWinDet.txt'
+zntuple zWinDet z='$WinOutZ+$WinTotThickness/2' format=ASCII coordinates=centerline file='zWinDet.txt'
 
 
 ###########################################################
@@ -75,6 +76,17 @@ do k 0 $zDiv
 enddo
 ntuple DetsAll detectors=Det* file=LXe union=1 format=ASCII
 
+do nz 0 $z_Divs
+    # Place entrance window
+    place Win x=$beamX y=$beamY z='$WinInZ-($nz-1)*$WinThickness' rename=WinIn$nz
+
+    # Place exit window
+    place Win x=$beamX y=$beamY z='$WinOutZ+($nz-1)*$WinThickness' rename=WinOut$nz
+enddo
+ntuple EntranceAll detectors=WinIn* file=WinIn union=1 format=ASCII
+ntuple ExitAll detectors=WinOut* file=WinOut union=1 format=ASCII
+
+
 # Place windows
-place Win x=$beamX y=$beamY z=$WinInZ rename=WinIn perTrack=1
-place Win x=$beamX y=$beamY z=$WinOutZ rename=WinOut perTrack=1
+#place Win x=$beamX y=$beamY z=$WinInZ rename=WinIn perTrack=1
+#place Win x=$beamX y=$beamY z=$WinOutZ rename=WinOut perTrack=1
