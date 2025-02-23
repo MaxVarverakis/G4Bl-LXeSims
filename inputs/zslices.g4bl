@@ -34,9 +34,9 @@ param beamX=0 # mm
 param beamY=0 # mm
 
 # Window parameters
-param z_Divs=10 # number of slices in z
+param z_Divs=0 # number of slices in z
 param WinTotThickness=2.0 # mm
-param WinThickness=$WinTotThickness/$z_Divs # mm
+param WinThickness='$WinTotThickness/($z_Divs + 1)' # mm
 param Rmax=10.0 # total radius of window (mm)
 param mat=Al # define the window material as separate parameter so it can be easily changed
 
@@ -78,10 +78,10 @@ ntuple DetsAll detectors=Det* file=LXe union=1 format=ASCII
 
 do nz 0 $z_Divs
     # Place entrance window
-    place Win x=$beamX y=$beamY z='$WinInZ-($nz-1)*$WinThickness' rename=WinIn$nz
+    place Win x=$beamX y=$beamY z='-($nz + 1/2) * $WinThickness' rename=WinIn$nz
 
     # Place exit window
-    place Win x=$beamX y=$beamY z='$WinOutZ+($nz-1)*$WinThickness' rename=WinOut$nz
+    place Win x=$beamX y=$beamY z='$LXeZ + ($nz + 1/2) * $WinThickness' rename=WinOut$nz
 enddo
 ntuple EntranceAll detectors=WinIn* file=WinIn union=1 format=ASCII
 ntuple ExitAll detectors=WinOut* file=WinOut union=1 format=ASCII
