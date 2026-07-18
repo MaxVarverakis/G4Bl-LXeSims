@@ -34,8 +34,8 @@ param beamX=0 # mm
 param beamY=0 # mm
 
 # Window parameters
-param z_Divs=0 # number of slices in z
-param WinTotThickness=2.0 # mm
+param z_Divs=3 # number of slices in z
+param WinTotThickness=0.5 # mm
 param WinThickness='$WinTotThickness/($z_Divs + 1)' # mm
 param Rmax=10.0 # total radius of window (mm)
 param mat=Al # define the window material as separate parameter so it can be easily changed
